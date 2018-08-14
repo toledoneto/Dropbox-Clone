@@ -18,8 +18,20 @@ class DropBoxController
         // tempo restante na barra modal
         this.timeleftEl = this.snackModalEl.querySelector('.timeleft');
         
+        // conecta ao Firebase
+        this.connectFirebase();
+
         // inicia os eventos
         this.initEvents();
+
+    }
+
+    connectFirebase()
+    {
+
+        // Initialize Firebase
+        var config = { 'your firebase data' };
+        firebase.initializeApp(config);
 
     }
 
