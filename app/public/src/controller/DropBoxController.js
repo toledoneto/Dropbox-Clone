@@ -17,12 +17,17 @@ class DropBoxController
         this.filenameEl = this.snackModalEl.querySelector('.filename');
         // tempo restante na barra modal
         this.timeleftEl = this.snackModalEl.querySelector('.timeleft');
+        // ID do HTML onde ficam os itens mostrados na tela
+        this.listFilesEl = document.querySelector('#list-of-files-and-directories');
         
         // conecta ao Firebase
         this.connectFirebase();
 
         // inicia os eventos
         this.initEvents();
+
+        // lê e lista todo os arquivos no DB
+        this.readFiles();
 
     }
 
@@ -234,7 +239,7 @@ class DropBoxController
                 `;
                 break;
 
-            case 'image/jpeg':
+            case "image/jpeg":
             case 'image/jpg':
             case 'image/gif':
             case 'image/png':
@@ -390,15 +395,52 @@ class DropBoxController
 
     }
 
-    getFileView(file)
+    // cria cada uma dos itens que serão colocados na tela do app
+    getFileView(file, key)
     {
 
-        return `
-            <li>
-                ${this.getFileIconView(file)}
-                <div class="name text-center">${file.name}</div>
-            </li>
+        let li = document.createElement('li');
+
+        // coloca o id do item criado como o id vindo do hash do DB
+        li.dataset.key = key;
+
+        // add o conteúdo do item
+        li.innerHTML = `
+            ${this.getFileIconView(file)}
+            <div class="name text-center">${file.name}</div>
         `;
+
+        return li;
+
+    }
+
+    // método para ler os arqv do DB
+    readFiles()
+    {
+
+        // o Firebase possui o evento value que é disparado cada vez que há uma
+        // mudança na armazenagem do DB, assim podemos ficar em constante sinconia com
+        // a observação do DB. Esse evento value não é feito do DB para o user, ou seja,
+        // não é preciso a aplicação ficar pingando o DB, o próprio DB responde auto// em caso
+        // de mudança através do evento
+        this.getFirebaseRef().on('value', snapshot => {
+
+            // zerando a lista de itens na tela
+            this.listFilesEl.innerHTML = '';
+
+            snapshot.forEach(snapshotItem => {
+
+                // has único de cada elemento no DB
+                let key = snapshotItem.key;
+                // dados armazenado no elemento
+                let data = snapshotItem.val();
+
+                // add na tela os elementos recebidos
+                this.listFilesEl.appendChild(this.getFileView(data, key));
+
+            })
+
+        });
 
     }
 
