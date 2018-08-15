@@ -410,6 +410,9 @@ class DropBoxController
             <div class="name text-center">${file.name}</div>
         `;
 
+        // mudandças no CSS do elemento selecionado na tela
+        this.initEventsLi(li);
+
         return li;
 
     }
@@ -441,6 +444,19 @@ class DropBoxController
             })
 
         });
+
+    }
+
+    
+    initEventsLi(li)
+    {
+
+        li.addEventListener('click', e => {
+
+            // add a class selected nativa do CSS para mudar o CSS do elemento selecionado
+            li.classList.toggle('selected');
+
+        })
 
     }
 
