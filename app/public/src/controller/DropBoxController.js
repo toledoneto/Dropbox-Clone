@@ -34,7 +34,9 @@ class DropBoxController
     connectFirebase()
     {
 
-        var config = {' your Firebase data '};
+        var config = {" your Firebase data "};
+        
+        
         
         
         firebase.initializeApp(config);
@@ -453,10 +455,64 @@ class DropBoxController
 
         li.addEventListener('click', e => {
 
+            // configurando o evento de seleção múltipla com aux do teclado.
+            // tecla SHIFT: ao clicar com SHIFT, devemos saber qual foi o 1º elemento clicado
+            // e o último para, então, selecionar todos entre os dois
+            if (e.shiftKey) 
+            {
+                
+                // armazena o 1º li selecionado 
+                let firstLi = this.listFilesEl.querySelector('.selected');
+
+                // e já tem algum selecionado 1º...
+                if(firstLi)
+                {
+
+                    let indexStart;
+                    let indexEnd;
+                    let lis = li.parentElement.childNodes;
+
+                    // para sabermos quais itens estão dentro do range de itens selecionados,
+                    // devemos subir para o elemento pai do li atual e percorrer todos seus filhos
+                    lis.forEach((el, index) => {
+
+                        if(firstLi === el) indexStart = index;
+                        if(li === el) indexEnd = index;
+
+                    });
+
+                    // array para ordenar os elemento dos índices retornados
+                    let index = [indexStart, indexEnd].sort();
+
+                    lis.forEach((el, ind) => {
+                        if(ind >= index[0] && ind <= index[1]) {el.classList.add('selected');}
+                    });
+
+                    // para a execução e impede o toggle do final do método de acontecer
+                    return true;
+
+                }
+
+            }
+            
+            
+            // tecla CTRL: como o funcionamento default do app é agir como se o CTRL estivesse pressionado
+            // vamos inverter a lógica nesse if abaixo
+            if (!e.ctrlKey) 
+            {
+                
+                // seleciona todos os li que estejam com a classe selected...
+                this.listFilesEl.querySelectorAll('li.selected').forEach(el => {
+                    // ...e remove essa classe
+                    el.classList.remove('selected');
+                });
+
+            }
+
             // add a class selected nativa do CSS para mudar o CSS do elemento selecionado
             li.classList.toggle('selected');
 
-        })
+        });
 
     }
 
