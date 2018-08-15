@@ -29,8 +29,9 @@ class DropBoxController
     connectFirebase()
     {
 
-        // Initialize Firebase
-        var config = { 'your firebase data' };
+        var config = {' your Firebase data '};
+        
+        
         firebase.initializeApp(config);
 
     }
@@ -47,17 +48,59 @@ class DropBoxController
 
         this.inputFiles.addEventListener('change', event => {
 
+            // trava o botão de envio de arqv para n ocorrer erro
+            this.btnSendFileEl.disabled = 'true';
+
             // método para poder carregar mais de um arqv ao msm tempo.
-            // target é o janela de inputFiles, o evento é a mudança dessa janela e o files são os arqvs enviados
-            this.uploadTask(event.target.files);
+            // target é o janela de inputFiles, o evento é a mudança dessa janela 
+            //e o files são os arqvs enviados. A promessa retornada é usada para salvar no Firebase
+            this.uploadTask(event.target.files).then(responses => {
+
+                // percorrendo cada uma das respostas retornadas
+                responses.forEach(resp => {
+
+                    // add uma nova entrada no DB
+                    this.getFirebaseRef().push().set(resp.files['input-file']);
+
+                });
+
+                this.uploadComplete();
+
+            }).catch(err => {
+
+                this.uploadComplete();
+                console.log(err);
+                
+            });
 
             // coloca o modal de barra de carregamento
             this.modalShow();
 
-            // zerando o campo de envio para ser possível enviar outros arqvs
-            this.inputFiles.value = '';
-
         });
+
+    }
+
+    // método que executa as operações após término do upload
+    uploadComplete()
+    {
+
+        // esconde o modal de arqv carregado
+        this.modalShow(false);
+
+        // zerando o campo de envio para ser possível enviar outros arqvs
+        this.inputFiles.value = '';
+
+        // destrava o botão de envio de arqv
+        this.btnSendFileEl.disabled = 'false';
+
+    }
+
+    // pega a referência do DB
+    getFirebaseRef()
+    {
+
+        // cria uma referência com o nome files no DB
+        return firebase.database().ref('files');
 
     }
 
@@ -89,9 +132,6 @@ class DropBoxController
                 // verificando a situação do envio
                 ajax.onload = event => {
 
-                    // esconde o modal de arqv carregado
-                    this.modalShow(false);
-
                     try
                     {
                         // caso haja sucesso no envio
@@ -99,7 +139,6 @@ class DropBoxController
 
                     } catch (err) {
 
-                        this.modalShow(false);
                         reject(err);
 
                     }
