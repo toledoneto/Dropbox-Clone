@@ -9,9 +9,6 @@ class DropBoxController
         // na seleção de um dos itens da tela. Esse é um evento personalizado
         this.onselectionchange = new Event('selectionchange');
 
-        // evento de clique no botão enviar
-        this.btnSendFileEl = document.querySelector('#btn-send-file');
-
         // janela de input de arqv
         this.inputFiles = document.querySelector('#files');
 
@@ -24,6 +21,12 @@ class DropBoxController
         this.timeleftEl = this.snackModalEl.querySelector('.timeleft');
         // ID do HTML onde ficam os itens mostrados na tela
         this.listFilesEl = document.querySelector('#list-of-files-and-directories');
+
+        //botões da aplicação
+        this.btnNewFolder = document.querySelector('#btn-new-folder'); // botão nova pasta
+        this.btnRename = document.querySelector('#btn-rename');        // botão renomear
+        this.btnDelete = document.querySelector('#btn-delete');        // botão deletar
+        this.btnSendFileEl = document.querySelector('#btn-send-file'); // botão enviar
         
         // conecta ao Firebase
         this.connectFirebase();
@@ -43,8 +46,14 @@ class DropBoxController
         
         
         
-        
         firebase.initializeApp(config);
+
+    }
+
+    getSelection()
+    {
+
+        return this.listFilesEl.querySelectorAll('.selected');
 
     }
 
@@ -54,7 +63,27 @@ class DropBoxController
         // ouvinte do evento personalizado criado no constructor
         this.listFilesEl.addEventListener('selectionchange', e => {
 
-            console.log('selectionchange');
+            // verificando quantos itens estão selecionados pois os botões tem aplicações diferente:
+            // 1. botão rename: apenas se um item estiver selecionado
+            // 2. botão delete: ao menos um item tem que estar selecionado
+
+            switch (this.getSelection().length)
+            {
+                case 0:
+                    this.btnDelete.style.display = 'none';
+                    this.btnRename.style.display = 'none';
+                    break;
+
+                case 1:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'block';
+                    break;
+            
+                default:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'none';
+                    break;
+            }
 
         });
 
@@ -467,9 +496,6 @@ class DropBoxController
 
         li.addEventListener('click', e => {
 
-            // emite o evento
-            this.listFilesEl.dispatchEvent(this.onselectionchange);
-
             // configurando o evento de seleção múltipla com aux do teclado.
             // tecla SHIFT: ao clicar com SHIFT, devemos saber qual foi o 1º elemento clicado
             // e o último para, então, selecionar todos entre os dois
@@ -500,8 +526,14 @@ class DropBoxController
                     let index = [indexStart, indexEnd].sort();
 
                     lis.forEach((el, ind) => {
-                        if(ind >= index[0] && ind <= index[1]) {el.classList.add('selected');}
+                        if(ind >= index[0] && ind <= index[1]) 
+                        {
+                            el.classList.add('selected');
+                        }
                     });
+
+                    // emite o evento
+                    this.listFilesEl.dispatchEvent(this.onselectionchange);
 
                     // para a execução e impede o toggle do final do método de acontecer
                     return true;
@@ -526,6 +558,9 @@ class DropBoxController
 
             // add a class selected nativa do CSS para mudar o CSS do elemento selecionado
             li.classList.toggle('selected');
+
+            // emite o evento
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
 
         });
 
