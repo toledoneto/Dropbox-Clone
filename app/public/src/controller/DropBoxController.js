@@ -4,6 +4,11 @@ class DropBoxController
     constructor()
     {
 
+        
+        // criando um evento para avisar a quem quiser ouvir que houve uma mudança
+        // na seleção de um dos itens da tela. Esse é um evento personalizado
+        this.onselectionchange = new Event('selectionchange');
+
         // evento de clique no botão enviar
         this.btnSendFileEl = document.querySelector('#btn-send-file');
 
@@ -45,6 +50,13 @@ class DropBoxController
 
     initEvents()
     {
+
+        // ouvinte do evento personalizado criado no constructor
+        this.listFilesEl.addEventListener('selectionchange', e => {
+
+            console.log('selectionchange');
+
+        });
 
         this.btnSendFileEl.addEventListener('click', event => {
 
@@ -454,6 +466,9 @@ class DropBoxController
     {
 
         li.addEventListener('click', e => {
+
+            // emite o evento
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
 
             // configurando o evento de seleção múltipla com aux do teclado.
             // tecla SHIFT: ao clicar com SHIFT, devemos saber qual foi o 1º elemento clicado
