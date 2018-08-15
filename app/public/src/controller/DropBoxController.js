@@ -60,6 +60,31 @@ class DropBoxController
     initEvents()
     {
 
+        // evento de clicar no botão rename
+        this.btnRename.addEventListener('click', e => {
+
+            // pega o elemento escolhido
+            let li = this.getSelection()[0];
+
+            // decodifica o JSON criado
+            let file = JSON.parse(li.dataset.file);
+
+            // cria o modal de input do novo name
+            let name = prompt("Renomear o arquivo: ", file.name);
+            
+            // se o user digitou um novo nome
+            if (name) 
+            {
+
+                file.name = name;
+
+                // altera no banco
+                this.getFirebaseRef().child(li.dataset.key).set(file);
+                
+            }
+
+        });
+
         // ouvinte do evento personalizado criado no constructor
         this.listFilesEl.addEventListener('selectionchange', e => {
 
@@ -445,7 +470,10 @@ class DropBoxController
         let li = document.createElement('li');
 
         // coloca o id do item criado como o id vindo do hash do DB
+        // e os dados tbm, porém o 2º vem em forma de OBJ e precisamos 
+        // transforma em string
         li.dataset.key = key;
+        li.dataset.file = JSON.stringify(file);
 
         // add o conteúdo do item
         li.innerHTML = `
