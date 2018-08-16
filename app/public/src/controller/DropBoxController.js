@@ -4,6 +4,9 @@ class DropBoxController
     constructor()
     {
 
+        // criando um array de pastas para navegação de pastas na aplicação. Deixando uma principal
+        // default para referência do DB
+        this.currentFolder = ['main'];
         
         // criando um evento para avisar a quem quiser ouvir que houve uma mudança
         // na seleção de um dos itens da tela. Esse é um evento personalizado
@@ -60,6 +63,26 @@ class DropBoxController
     initEvents()
     {
 
+        // evento para botão de criar nova pasta
+        this.btnNewFolder.addEventListener('click', e => {
+
+            let name = prompt("Nome da nova pasta");
+
+            // se o user digitou um nome
+            if (name) 
+            {
+
+                this.getFirebaseRef().push().set({
+                    name, 
+                    type: 'folder',  // cria um ícone do tipo folder na tela da app
+                    path: this.currentFolder.join('/') // concatena o path com o elemento criado no construtor
+                });
+                
+            }
+
+        });
+
+        // evento do botão de exclusão de arqvs
         this.btnDelete.addEventListener('click', e => {
 
             this.removeTask().then(responses => {
