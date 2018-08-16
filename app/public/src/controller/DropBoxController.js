@@ -288,27 +288,41 @@ class DropBoxController
         // para cada file enviado...
         [...files].forEach(file => {
 
-            // criando um formData para envio do arqv
-            let formData = new FormData();
+            // enviando a promessa para o o array
+            promises.push(new Promise((resolve, reject) => {
 
-            // (nome do aqrv no server, arqv para ser enviado)
-            formData.append('input-file', file);
+                // criando uma referência para armazenar no storage
+                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
 
-            // ...add uma nova promessa DAQUELE arqv no array de promessas
-            promises.push(this.ajax('/upload', 'POST', formData, event => {
+                // fazendo o upload
+                let task = fileRef.put(file);
 
-                // onprogress:
-                // enquanto o envio está sendo feito, muda a barra de progresso do upload
-                this.uploadProgress(event, file); 
+                // podemos ver o processamento do upload pelo método state_changed
+                task.on('state_changed', snapshot => {
+                    
+                    // on progress
+                    this.uploadProgress({
+                        loaded: snapshot.bytesTransferred,
+                        total: snapshot.totalBytes
+                    }, file)
+                    console.log('progress', snapshot);
 
-            },() => {
+                }, error => {
+                    
+                    // on error
+                    console.error(error);
+                    reject(error);
 
-                // onloadstart:
-                // salvando o momento em que o arqv foi enviado para upload e
-                // assim, ser capaz de calcular o tempo restante
-                this.startUploadTime = Date.now();
+                }, snapshot => {
+
+                    //on resolve
+                    console.log('success', snapshot);
+                    resolve();
+
+                });
 
             }));
+            
         });
 
         // Promise.all trata várias promessas ao msm tempo
