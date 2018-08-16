@@ -7,6 +7,9 @@ class DropBoxController
         // criando um array de pastas para navegação de pastas na aplicação. Deixando uma principal
         // default para referência do DB
         this.currentFolder = ['main'];
+
+        // elemento de breadCrumbs, ou seja, o path em forma de link no topo da pág para voltar a alguma pasta
+        this.navEl = document.querySelector('#browse-location');
         
         // criando um evento para avisar a quem quiser ouvir que houve uma mudança
         // na seleção de um dos itens da tela. Esse é um evento personalizado
@@ -626,8 +629,79 @@ class DropBoxController
         // add o arqv em todas as pastas no path de navegação
         if(this.lastFolder) this.getFirebaseRef(this.lastFolder).off('value');
 
+        // add, atualiza e renderizao breadcrumbs
+        this.renderNav();
+
         // lê e lista todo os arquivos daquela pasta que está no DB
         this.readFiles();
+
+    }
+
+    // método para atualizar o breadCrumbs
+    renderNav()
+    {
+
+        let nav = document.createElement('nav');
+        // armazena o path de cada pasta
+        let path = [];
+
+        // navegando pelas pastas no array de pastas do construtor
+        for (let index = 0; index < this.currentFolder.length; index++) 
+        {
+            
+            let folderName = this.currentFolder[index];
+            let span = document.createElement('span');
+
+            path.push(folderName);
+
+            // verificando se a pasta atual é a útlima do array. Para isso, como o array inicia em 0,
+            // basta vermos se aposição atual +1 = ao tam do array
+            if ((index + 1) === this.currentFolder.length) 
+            {
+
+                // se for a última pasta, o breadCrumbs vai receber o nome da pasta, mas sem link
+                span.innerHTML = folderName;
+                
+            } else {
+
+                span.className = 'breadcrumb-segment__wrapper';
+
+                span.innerHTML = 
+                    `
+                        <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+                            <a href="#" data-path="${path.join('/')}" class="breadcrumb-segment">${folderName}</a>
+                        </span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" class="mc-icon-template-stateless" style="top: 4px; position: relative;">
+                            <title>arrow-right</title>
+                            <path d="M10.414 7.05l4.95 4.95-4.95 4.95L9 15.534 12.536 12 9 8.464z" fill="#637282" fill-rule="evenodd"></path>
+                        </svg>
+                    
+                    `;
+
+            }
+
+            nav.appendChild(span);
+            
+        }
+
+        // renderiza o novo navEl
+        this.navEl.innerHTML = nav.innerHTML;
+
+        // evento de clicar no breadCrumbs e ir para a respectiva pasta
+        this.navEl.querySelectorAll('a').forEach(a => {
+
+            a.addEventListener('click', e => {
+
+                e.preventDefault();
+
+                // recupera a info dentro do dataset que contém o path das pastas
+                this.currentFolder =  a.dataset.path.split('/');
+
+                this.openFolder();
+
+            });
+
+        });
 
     }
     
