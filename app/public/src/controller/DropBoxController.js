@@ -42,8 +42,8 @@ class DropBoxController
     connectFirebase()
     {
 
-        var config = {" your Firebase data "};
-        
+        var config = { your Firebase data };
+
         
         
         firebase.initializeApp(config);
@@ -59,6 +59,16 @@ class DropBoxController
 
     initEvents()
     {
+
+        this.btnDelete.addEventListener('click', e => {
+
+            this.removeTask().then(responses => {
+                console.log(responses);
+            }).catch(err => {
+                console.error(err);
+            });
+
+        });
 
         // evento de clicar no botão rename
         this.btnRename.addEventListener('click', e => {
@@ -184,6 +194,70 @@ class DropBoxController
 
     }
 
+    ajax(url, method = 'GET', formData = new FormData(), onprogress = function() {}, onloadstart = function() {})
+    {
+
+        return new Promise((resolve, reject) => {
+            
+            // cria uma conexão AJAX...
+            let ajax = new XMLHttpRequest();
+
+            // ...e envia via method
+            ajax.open(method, url);
+
+            // verificando a situação do envio
+            ajax.onload = event => {
+
+                try
+                {
+                    // caso haja sucesso no envio
+                    resolve(JSON.parse(ajax.responseText));
+
+                } catch (err) {
+
+                    reject(err);
+
+                }
+            };
+
+            ajax.onerror = event => {
+                reject(event);
+            };
+
+            // enquanto o envio está sendo feito, muda a barra de progresso do upload
+            ajax.upload.onprogress = onprogress;
+
+            // salvando o momento em que o arqv foi enviado para upload e
+            // assim, ser capaz de calcular o tempo restante
+            onloadstart();
+
+            // enviando via ajax
+            ajax.send(formData);
+
+            // // enquanto o envio está sendo feito, muda a barra de progresso do upload
+            // ajax.upload.onprogress = event => {
+
+            //     this.uploadProgress(event, file);
+
+            // };
+
+            // // criando um formData para envio do arqv
+            // let formData = new FormData();
+
+            // // (nome do aqrv no server, arqv para ser enviado)
+            // formData.append('input-file', file);
+
+            // // salvando o momento em que o arqv foi enviado para upload e
+            // // assim, ser capaz de calcular o tempo restante
+            // this.startUploadTime = Date.now();
+
+            // // enviando via ajax
+            // ajax.send(formData);
+
+        });
+
+    }
+
     uploadTask(files)
     {
 
@@ -193,59 +267,54 @@ class DropBoxController
         // para cada file enviado...
         [...files].forEach(file => {
 
+            // criando um formData para envio do arqv
+            let formData = new FormData();
+
+            // (nome do aqrv no server, arqv para ser enviado)
+            formData.append('input-file', file);
+
             // ...add uma nova promessa DAQUELE arqv no array de promessas
-            promises.push(new Promise((resolve, reject) => {
+            promises.push(this.ajax('/upload', 'POST', formData, () => {
 
-                // cria uma conexão AJAX...
-                let ajax = new XMLHttpRequest();
-
-                // ...e envia via POST
-                ajax.open('POST', '/upload');
-
-                // verificando a situação do envio
-                ajax.onload = event => {
-
-                    try
-                    {
-                        // caso haja sucesso no envio
-                        resolve(JSON.parse(ajax.responseText));
-
-                    } catch (err) {
-
-                        reject(err);
-
-                    }
-                };
-
-                ajax.onerror = event => {
-                    reject(event);
-                };
-
+                // onprogress:
                 // enquanto o envio está sendo feito, muda a barra de progresso do upload
-                ajax.upload.onprogress = event => {
+                this.uploadProgress(event, file); 
 
-                    this.uploadProgress(event, file);
+            },() => {
 
-                };
-
-                // criando um formData para envio do arqv
-                let formData = new FormData();
-
-                // (nome do aqrv no server, arqv para ser enviado)
-                formData.append('input-file', file);
-
+                // onloadstart:
                 // salvando o momento em que o arqv foi enviado para upload e
                 // assim, ser capaz de calcular o tempo restante
                 this.startUploadTime = Date.now();
-
-                // enviando via ajax
-                ajax.send(formData);
 
             }));
         });
 
         // Promise.all trata várias promessas ao msm tempo
         return Promise.all(promises);
+
+    }
+
+    removeTask()
+    {
+
+        let promises = [];
+
+        // pega os elementos selecionados na tela
+        this.getSelection().forEach(li => {
+
+            let file = JSON.parse(li.dataset.file);
+
+            // coloca a promessa no array de promessas
+            promises.push(new Promise((resolve, reject) => {
+
+                
+
+            }));
+
+            return Promise.all(promises);
+
+        });
 
     }
 
