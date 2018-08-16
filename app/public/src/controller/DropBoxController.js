@@ -51,6 +51,7 @@ class DropBoxController
         var config = { your Firebase data };
 
         
+        
         firebase.initializeApp(config);
 
     }
@@ -176,7 +177,23 @@ class DropBoxController
             //e o files são os arqvs enviados. A promessa retornada é usada para salvar no Firebase
             this.uploadTask(event.target.files).then(responses => {
 
-                console.log("responses", responses);
+                // percorrendo cada uma das respostas retornadas
+                responses.forEach(resp => {
+
+                    // novo modo de buscar a URL do arqv no Firebase
+                    resp.ref.getDownloadURL().then(downloadURL => {
+
+                        // add uma nova entrada no DB
+                        this.getFirebaseRef().push().set({
+                            name: resp.name,
+                            type: resp.contentType,
+                            path: downloadURL,
+                            size: resp.size
+                        });
+
+                    });
+
+                });
 
                 this.uploadComplete();
 
