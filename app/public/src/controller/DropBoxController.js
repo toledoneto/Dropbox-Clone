@@ -601,8 +601,15 @@ class DropBoxController
                 // dados armazenado no elemento
                 let data = snapshotItem.val();
 
-                // add na tela os elementos recebidos
-                this.listFilesEl.appendChild(this.getFileView(data, key));
+                // para evitar erro de aparecer um item undefined na tela ao se criar subpastas,
+                // verificamos se o item tem algum dado faltando e, se sim, não o mostramos
+                if (data.type) 
+                {
+
+                    // add na tela os elementos recebidos
+                    this.listFilesEl.appendChild(this.getFileView(data, key));
+                    
+                }
 
             })
 
