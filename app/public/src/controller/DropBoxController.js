@@ -44,7 +44,7 @@ class DropBoxController
 
         var config = { your Firebase data };
 
-      
+        
         
         firebase.initializeApp(config);
 
@@ -63,7 +63,19 @@ class DropBoxController
         this.btnDelete.addEventListener('click', e => {
 
             this.removeTask().then(responses => {
-                console.log(responses);
+                
+                responses.forEach(response => {
+
+                    // verificando se a chave que se quer excluir existe no DB
+                    if (response.fields.key) 
+                    {
+
+                        // child representa o nó desejado com hash = ao param passado
+                        this.getFirebaseRef().child(response.fields.key).remove();
+                        
+                    }
+                });
+
             }).catch(err => {
                 console.error(err);
             });
@@ -152,7 +164,7 @@ class DropBoxController
             }).catch(err => {
 
                 this.uploadComplete();
-                console.log(err);
+                console.error(err);
                 
             });
 
@@ -284,20 +296,19 @@ class DropBoxController
         this.getSelection().forEach(li => {
 
             let file = JSON.parse(li.dataset.file);
-
-            // console.log(file); -> FUNCIONANDO
+            let key = li.dataset.key;
 
             let formData = new FormData();
 
             formData.append('path', file.path);
-            formData.append('key', file.key);
+            formData.append('key', key);
 
             // coloca a promessa no array de promessas
             promises.push(this.ajax('/file', 'DELETE', formData));
 
-            return Promise.all(promises);
-
         });
+
+        return Promise.all(promises);
 
     }
 
