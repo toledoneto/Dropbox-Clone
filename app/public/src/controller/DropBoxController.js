@@ -344,6 +344,72 @@ class DropBoxController
 
     }
 
+    removeFile(ref, name)
+    {
+
+        // criando uma referência para armazenar no storage
+        let fileRef = firebase.storage().ref(ref).child(name);
+
+        // deletando
+        return fileRef.delete();
+
+    }
+
+    removeFolderTask(ref, name)
+    {
+
+        return new Promise((resolve, reject) => {
+
+            // recuperando a ref no DB
+            let folderRef = this.getFirebaseRef(ref + '/' + name);
+
+            folderRef.on('value', snapshot => {
+
+                snapshot.forEach(item => {
+                    
+                    let data = item.val();
+                    data.key = item.key;
+
+                    if (data.type === 'folder') 
+                    {
+
+                        this.removeFolderTask(ref + '/' + name, data.name).then(() => {
+
+                            resolve({
+                                fields:{
+                                    key: data.key
+                                }
+                            });
+
+                        }).catch(err => {
+                            reject(err);
+                        });
+                        
+                    } else if (data.type){
+                        this.removeFile(ref + '/' + name, data.name).then(() => {
+
+                            resolve({
+                                fields:{
+                                    key: data.key
+                                }
+                            });
+
+                        }).catch(err => {
+                            reject(err);
+                        });
+                    }
+
+                });
+
+                folderRef.remove();
+                folderRef.off('value');
+
+            });
+
+        });
+
+    }
+
     removeTask()
     {
 
@@ -358,21 +424,36 @@ class DropBoxController
             // coloca a promessa no array de promessas
             promises.push(new Promise((resolve, reject) => {
 
-                // criando uma referência para armazenar no storage
-                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
+                // verificando se deletamos uma pasta ou um arqv
+                if (file.type === 'folder') 
+                {
 
-                // deletando
-                fileRef.delete().then(() => {
+                    this.removeFolderTask(this.currentFolder.join('/'), file.name).then(() => {
+
+                        resolve({
+                            fields:{
+                                key
+                            }
+                        });
+    
+                    });
                     
-                    resolve({
-                        fields:{
-                            key
-                        }
+                } else if(file.type){
+                    // esse else if aparece para evitar o problema de arqv undefined que
+                    // surge ao se criar uma nova pasta, por isso ao menos
+                    // verificamos se estamos apagando algo com tipo
+
+                    this.removeFile(this.currentFolder.join('/'), file.name).then(() => {
+
+                        resolve({
+                            fields:{
+                                key
+                            }
+                        });
+    
                     });
 
-                }).catch(err => {
-                    reject(err);
-                });
+                }
 
             }));
 
