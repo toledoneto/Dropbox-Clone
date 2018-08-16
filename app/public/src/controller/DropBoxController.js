@@ -37,15 +37,15 @@ class DropBoxController
         // inicia os eventos
         this.initEvents();
 
-        // lê e lista todo os arquivos no DB
-        this.readFiles();
+        // ao abrir a app pela 1ª vez, temos a 1ª abertura de pasta: pasta main
+        this.openFolder()
 
     }
 
     connectFirebase()
     {
 
-        var config = { your Firebase data  };
+        var config = { your Firebase data };
 
         
         
@@ -214,11 +214,14 @@ class DropBoxController
     }
 
     // pega a referência do DB
-    getFirebaseRef()
+    getFirebaseRef(path)
     {
 
+        // se não passarmos um path, o app irá considerar o path a pasta atual
+        if(!path) path = this.currentFolder.join('/');
+
         // cria uma referência com o nome files no DB
-        return firebase.database().ref('files');
+        return firebase.database().ref(path);
 
     }
 
@@ -578,6 +581,9 @@ class DropBoxController
     readFiles()
     {
 
+        // salvando a última pasta acessada
+        this.lastFolder = this.currentFolder.join('/');
+
         // o Firebase possui o evento value que é disparado cada vez que há uma
         // mudança na armazenagem do DB, assim podemos ficar em constante sinconia com
         // a observação do DB. Esse evento value não é feito do DB para o user, ou seja,
@@ -604,9 +610,42 @@ class DropBoxController
 
     }
 
+    // método para abrir pastas da tela de aplicação
+    openFolder()
+    {
+
+        // quando navegamos para uma subpasta, precisamos apagar a referência da pasta anterior,
+        // senão haverá uma acúmulo de referências e uma operação de upload, p.e., poderia
+        // add o arqv em todas as pastas no path de navegação
+        if(this.lastFolder) this.getFirebaseRef(this.lastFolder).off('value');
+
+        // lê e lista todo os arquivos daquela pasta que está no DB
+        this.readFiles();
+
+    }
     
     initEventsLi(li)
     {
+
+        li.addEventListener('dblclick', e => {
+
+            // verificando se o item clicado foi uma pasta ou um arqv
+            let file = JSON.parse(li.dataset.file);
+
+            switch (file.type) {
+                // caso seja pasta, temos de navegar até a subpasta
+                case 'folder':
+                    // adiciona a pasta no array de pastas localizado no costrutor
+                    this.currentFolder.push(file.name);
+                    this.openFolder();
+                    break;
+                // caso seja um arqv, temos de abrir na tela
+                default:
+                    window.open('/file?path=' + file.path);
+                    break;
+            }
+
+        });
 
         li.addEventListener('click', e => {
 
