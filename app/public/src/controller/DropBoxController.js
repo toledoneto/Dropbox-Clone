@@ -44,7 +44,7 @@ class DropBoxController
 
         var config = { your Firebase data };
 
-        
+      
         
         firebase.initializeApp(config);
 
@@ -234,26 +234,6 @@ class DropBoxController
             // enviando via ajax
             ajax.send(formData);
 
-            // // enquanto o envio está sendo feito, muda a barra de progresso do upload
-            // ajax.upload.onprogress = event => {
-
-            //     this.uploadProgress(event, file);
-
-            // };
-
-            // // criando um formData para envio do arqv
-            // let formData = new FormData();
-
-            // // (nome do aqrv no server, arqv para ser enviado)
-            // formData.append('input-file', file);
-
-            // // salvando o momento em que o arqv foi enviado para upload e
-            // // assim, ser capaz de calcular o tempo restante
-            // this.startUploadTime = Date.now();
-
-            // // enviando via ajax
-            // ajax.send(formData);
-
         });
 
     }
@@ -274,7 +254,7 @@ class DropBoxController
             formData.append('input-file', file);
 
             // ...add uma nova promessa DAQUELE arqv no array de promessas
-            promises.push(this.ajax('/upload', 'POST', formData, () => {
+            promises.push(this.ajax('/upload', 'POST', formData, event => {
 
                 // onprogress:
                 // enquanto o envio está sendo feito, muda a barra de progresso do upload
@@ -305,12 +285,15 @@ class DropBoxController
 
             let file = JSON.parse(li.dataset.file);
 
+            // console.log(file); -> FUNCIONANDO
+
+            let formData = new FormData();
+
+            formData.append('path', file.path);
+            formData.append('key', file.key);
+
             // coloca a promessa no array de promessas
-            promises.push(new Promise((resolve, reject) => {
-
-                
-
-            }));
+            promises.push(this.ajax('/file', 'DELETE', formData));
 
             return Promise.all(promises);
 
