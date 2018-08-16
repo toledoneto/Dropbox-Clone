@@ -45,7 +45,7 @@ class DropBoxController
     connectFirebase()
     {
 
-        var config = { your Firebase data };
+        var config = { your Firebase data  };
 
         
         
