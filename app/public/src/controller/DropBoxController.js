@@ -50,7 +50,7 @@ class DropBoxController
 
         var config = { your Firebase data };
 
-       
+        
         
         firebase.initializeApp(config);
 
@@ -846,7 +846,7 @@ class DropBoxController
                     break;
                 // caso seja um arqv, temos de abrir na tela
                 default:
-                    window.open('/file?path=' + file.path);
+                    window.open(file.path);
                     break;
             }
 
