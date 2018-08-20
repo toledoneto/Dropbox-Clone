@@ -16,7 +16,7 @@ class DropBoxController
         this.onselectionchange = new Event('selectionchange');
 
         // janela de input de arqv
-        this.inputFiles = document.querySelector('#files');
+        this.inputFilesEl = document.querySelector('#files');
 
         // modal da barra de progresso do upload do arqv
         this.snackModalEl = document.querySelector('#react-snackbar-root');
@@ -48,9 +48,16 @@ class DropBoxController
     connectFirebase()
     {
 
-        var config = { your Firebase data };
+        // var config = { your Firebase data };
 
-        
+        var config = {
+            apiKey: "AIzaSyCck-RgbSXA35Yjy01JPuyyADaG3u4hm-E",
+            authDomain: "dropbox-clone-1aa13.firebaseapp.com",
+            databaseURL: "https://dropbox-clone-1aa13.firebaseio.com",
+            projectId: "dropbox-clone-1aa13",
+            storageBucket: "dropbox-clone-1aa13.appspot.com",
+            messagingSenderId: "360546635360"
+        };
         
         firebase.initializeApp(config);
 
@@ -163,17 +170,17 @@ class DropBoxController
         this.btnSendFileEl.addEventListener('click', event => {
 
             // 'força' o click no botão para abrir janela de abrir arqvs
-            this.inputFiles.click();
+            this.inputFilesEl.click();
 
         });
 
-        this.inputFiles.addEventListener('change', event => {
+        this.inputFilesEl.addEventListener('change', event => {
 
             // trava o botão de envio de arqv para n ocorrer erro
             this.btnSendFileEl.disabled = 'true';
 
             // método para poder carregar mais de um arqv ao msm tempo.
-            // target é o janela de inputFiles, o evento é a mudança dessa janela 
+            // target é o janela de inputFilesEl, o evento é a mudança dessa janela 
             //e o files são os arqvs enviados. A promessa retornada é usada para salvar no Firebase
             this.uploadTask(event.target.files).then(responses => {
 
@@ -219,7 +226,7 @@ class DropBoxController
         this.modalShow(false);
 
         // zerando o campo de envio para ser possível enviar outros arqvs
-        this.inputFiles.value = '';
+        this.inputFilesEl.value = '';
 
         // destrava o botão de envio de arqv
         this.btnSendFileEl.disabled = 'false';
@@ -338,6 +345,8 @@ class DropBoxController
             }));
             
         });
+
+        this.startUploadTime = Date.now();
 
         // Promise.all trata várias promessas ao msm tempo
         return Promise.all(promises);
